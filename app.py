@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from typing import Final
 
-from discord import Intents, Client, Message
+from discord import Intents, Client, Message, Integration, Interaction
 from discord.ext import commands
 from discord.ext.commands.bot import Bot
 from discord.utils import get
@@ -39,7 +39,7 @@ async def on_ready() -> None:
   print(f'{bot.user} is now operational')
 
 @bot.command()
-async def play(ctx, url) -> None:
+async def play(ctx: Interaction, url) -> None:
   ydl_opts = {
     'format': 'bestaudio/best',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
@@ -54,10 +54,11 @@ async def play(ctx, url) -> None:
     'source_address': '0.0.0.0'
     }
   ffmpeg_opts = {
-    "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
-    "options": "-vn"
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+    'options': '-vn -filter:a “volume=0.15”'
   }
-  ffmpeg_path = 'E:\\ffmpeg-2024-12-04-git-2f95bc3cb3-full_build\\bin\\ffmpeg.exe'
+
+  ffmpeg_path = os.getenv("FFMPEG_PATH")
   channel = ctx.message.author.voice.channel
   voice = get(bot.voice_clients, guild=ctx.guild)
 
