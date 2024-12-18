@@ -1,12 +1,13 @@
+import asyncio
 import os
 from dotenv import load_dotenv
 from typing import Final
 
-from discord import Intents, Client, Message, Integration, Interaction
+from discord import Intents, Message, FFmpegOpusAudio
 from discord.ext import commands
+from discord.ext.commands import Context
 from discord.ext.commands.bot import Bot
 from discord.utils import get
-from discord import FFmpegPCMAudio
 
 from yt_dlp import YoutubeDL
 
@@ -20,6 +21,9 @@ TOKEN: Final[str] = os.getenv('DISCORD_TOKEN')
 intents: Intents = Intents.all()
 intents.message_content = True # NOQA
 bot: Bot = commands.Bot(command_prefix='.', intents=intents)
+
+queues = {}
+
 
 
 async def send_message(message: Message, user_message: str) -> None:
@@ -38,8 +42,13 @@ async def send_message(message: Message, user_message: str) -> None:
 async def on_ready() -> None:
   print(f'{bot.user} is now operational')
 
-@bot.command()
-async def play(ctx: Interaction, url) -> None:
+async def play_next(ctx: Context) -> None:
+  if queues[ctx.guild.id]:
+    next_song_url = queues[ctx.guild.id].pop(0)
+    await play(ctx, url=next_song_url)
+
+@bot.command(name="play")
+async def play(ctx: Context, url: str) -> None:
   ydl_opts = {
     'format': 'bestaudio/best',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
@@ -53,10 +62,8 @@ async def play(ctx: Interaction, url) -> None:
     'default_search': 'auto',
     'source_address': '0.0.0.0'
     }
-  ffmpeg_opts = {
-    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-    'options': '-vn -filter:a “volume=0.15”'
-  }
+  ffmpeg_opts = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+                 'options': '-vn -filter:a "volume=0.25"'}
 
   ffmpeg_path = os.getenv("FFMPEG_PATH")
   channel = ctx.message.author.voice.channel
@@ -67,20 +74,19 @@ async def play(ctx: Interaction, url) -> None:
   else:
     voice = await channel.connect()
 
-  if not voice.is_playing():
-    with YoutubeDL(ydl_opts) as ydl:
-      info = ydl.extract_info(url, download=False)
-      video_url = info.get('url')
-      voice.play(FFmpegPCMAudio(executable=ffmpeg_path, source=video_url, **ffmpeg_opts))
-      voice.is_playing()
+
+  with YoutubeDL(ydl_opts) as ydl:
+    info = ydl.extract_info(url, download=False)
+    video_url = info.get('url')
+    voice.play(FFmpegOpusAudio(source=video_url, **ffmpeg_opts),
+               after=lambda a:  asyncio.run_coroutine_threadsafe(play_next(ctx), bot.loop))
+    if voice.is_playing():
       await ctx.send(f":fire: Playing {info['title']}")
-  else:
-    await ctx.send(":fire: Music is already Playing...")
-    return
 
 
-@bot.command()
-async def stop(ctx):
+
+@bot.command(name="stop")
+async def stop(ctx: Context):
   voice = get(bot.voice_clients, guild=ctx.guild)
 
   if voice.is_playing():
@@ -105,25 +111,22 @@ async def on_message(message: Message) -> None:
     await send_message(message, user_message)
   await bot.process_commands(message)
 
-# Pause the Music
-@bot.command()
-async def pause(ctx):
+@bot.command(name="pause")
+async def pause(ctx: Context):
   voice = get(bot.voice_clients, guild=ctx.guild)
   if voice.is_playing():
     voice.pause()
     await ctx.send(":fire: Music Paused...")
 
-# Resume the Music
-@bot.command()
-async def resume(ctx):
+@bot.command(name="resume")
+async def resume(ctx: Context):
   voice = get(bot.voice_clients, guild=ctx.guild)
   if not voice.is_playing():
     voice.resume()
     await ctx.send(":fire: Music Resumed...")
 
-# Volume Controll
-@bot.command()
-async def volume(ctx, volume: int):
+@bot.command(name="volume")
+async def volume(ctx: Context, volume: int):
   volume = int(volume)
   if ctx.voice_client is None:
     return await ctx.send("Not connected to a voice channel.")
@@ -131,9 +134,8 @@ async def volume(ctx, volume: int):
   ctx.voice_client.source.volume = volume / 100
   await ctx.send(f":fire: Changed volume to {volume}%")
 
-# Checks users connectivity
 @play.before_invoke
-async def ensure_voice(ctx):
+async def ensure_voice(ctx: Context):
   if ctx.voice_client is None:
     if ctx.author.voice:
       await ctx.author.voice.channel.connect()
@@ -142,6 +144,33 @@ async def ensure_voice(ctx):
       raise commands.CommandError("Author not connected to a voice channel.")
   elif ctx.voice_client.is_playing():
     ctx.voice_client.stop()
+
+@bot.command(name="add")
+async def add_to_queue(ctx: Context, url: str):
+  if ctx.guild.id not in queues:
+    queues[ctx.guild.id] = []
+  queues[ctx.guild.id].append(url)
+  print(queues)
+  await ctx.send("Added to queue!")
+
+@bot.command(name="clear_queue")
+async def clear_queue(ctx: Context):
+  if ctx.guild.id in queues:
+    queues[ctx.guild.id].clear()
+    await ctx.send("Queue cleared!")
+  else:
+    await ctx.send("Queue is already empty!")
+
+@bot.command(name="skip")
+async def skip_song(ctx: Context) -> None:
+  if queues[ctx.guild.id]:
+    await ctx.send("Skipping song...")
+    await pause(ctx)
+    await play_next(ctx)
+  else:
+    await stop(ctx)
+    await ctx.send("That was the last one.")
+
 
 def main() -> None:
   bot.run(token=TOKEN)
