@@ -24,17 +24,21 @@ def get_default_response(user_input: str) -> str:
     -Headers # ## ###
     -Masked Links [Text](link)
     -Lists - *
+    -Code block `code here`
 """
 
-def get_new_song_response(song_title: str, yt_link: str, next_song_title: str) -> str:
+def now_playing_response(song_title: str, yt_link: str, next_song_title: str) -> str:
 
     now_playing_text = f"**Сейчас играет: [{song_title}]({yt_link})**"
     next_song_text = f"**Следующая песня:** *{next_song_title}*"
     return now_playing_text + '\n' + next_song_text
 
 
-def get_queue_list_response(queue: list[MusicQueue.QueueItem]) -> str:
+
+def queue_list_response(queue: list[MusicQueue.QueueItem]) -> str:
     next_in_queue_txt = "**Очередь:**"
+    if len(queue) == 0:
+        return "Очередь пуста!"
     list_txt = ""
     item_no = 0
     for item in queue:
@@ -43,9 +47,20 @@ def get_queue_list_response(queue: list[MusicQueue.QueueItem]) -> str:
         yt_link = item.get_yt_link()
         if list_txt != "":
             list_txt = list_txt + '\n' + \
-                        f"{item_no}. [{song_name}]({yt_link})"
+                        f"*{item_no}. [{song_name}]({yt_link})"
         else:
-            list_txt = f"{item_no}. [{song_name}]({yt_link})"
+            list_txt = f"*{item_no}. [{song_name}]({yt_link})"
 
     return next_in_queue_txt + "\n" + list_txt
 
+def empty_queue_response():
+    return "Нечего играть. Сначала добавьте песни в очередь при помощи `.add <url>` или воспроизведите песню с помощью `.play <url>`"
+
+
+
+def song_added_response(song_name: str) -> str:
+    return f"{song_name} успешно добавлена в очередь!"
+
+
+def queue_cleared_response() -> str:
+    return "Очередь успешно очещена!"
