@@ -27,7 +27,7 @@ def get_default_response(user_input: str) -> str:
     -Code block `code here`
 """
 
-def now_playing_response(song_title: str, yt_link: str, next_song_title: str) -> str:
+def now_playing_response(song_title: str, yt_link: str, next_song_title="Nothing...") -> str:
 
     now_playing_text = f"**Сейчас играет: [{song_title}]({yt_link})**"
     next_song_text = f"**Следующая песня:** *{next_song_title}*"

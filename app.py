@@ -73,7 +73,6 @@ async def play_next(ctx: Context) -> None:
 
 
 
-
 @bot.command(name="play_all")
 async def play_all(ctx: Context) -> None:
   if not music_queue_obj.is_empty(ctx.guild.id):
@@ -103,8 +102,12 @@ async def play(ctx: Context, url: str) -> None:
     voice.play(FFmpegOpusAudio(source=video_url, **FFMPEG_OPTS),
                after=lambda a:  asyncio.run_coroutine_threadsafe(play_next(ctx), bot.loop))
     if voice.is_playing():
-      next_song = music_queue_obj.get_next_song_title(guild_id=ctx.guild.id)
-      await ctx.send(responses.now_playing_response(song_title=video_title, yt_link=url, next_song_title=next_song))
+      try:
+        next_song = music_queue_obj.get_next_song_title(guild_id=ctx.guild.id)
+        await ctx.send(responses.now_playing_response(song_title=video_title, yt_link=url, next_song_title=next_song))
+      except BotExceptions.InvalidGuildIdException as e:
+        await ctx.send(responses.now_playing_response(song_title=video_title, yt_link=url))
+
 
 
 

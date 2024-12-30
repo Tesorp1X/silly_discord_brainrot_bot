@@ -61,7 +61,6 @@ class MusicQueue:
     def __init__(self):
         self.__queue = {}
         self.__is_shuffled = {}
-        print("Queue initialised.")
 
     def add_item(self, guild_id, video_title: str, video_yt_link: str, video_url: str) -> int:
 
