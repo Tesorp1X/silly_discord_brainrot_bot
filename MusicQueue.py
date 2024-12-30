@@ -75,7 +75,7 @@ class MusicQueue:
         self.__is_shuffled[guild_id] = False
         return len(self.__queue[guild_id]) + 1
 
-    def get(self, guild_id):
+    def get(self, guild_id) -> list[QueueItem]:
         if guild_id in self.__queue:
             return self.__queue[guild_id]
         raise BotExceptions.InvalidGuildIdException(guild_id)

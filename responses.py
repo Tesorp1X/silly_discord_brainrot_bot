@@ -47,9 +47,9 @@ def queue_list_response(queue: list[MusicQueue.QueueItem]) -> str:
         yt_link = item.get_yt_link()
         if list_txt != "":
             list_txt = list_txt + '\n' + \
-                        f"*{item_no}. [{song_name}]({yt_link})"
+                        f"* {item_no}. [{song_name}](<{yt_link}>)"
         else:
-            list_txt = f"*{item_no}. [{song_name}]({yt_link})"
+            list_txt = f"* {item_no}. [{song_name}](<{yt_link}>)"
 
     return next_in_queue_txt + "\n" + list_txt
 

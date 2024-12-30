@@ -174,6 +174,11 @@ async def add_to_queue(ctx: Context, url: str) -> str:
 
 
 
+@bot.command(name="queue")
+async def show_queue(ctx: Context) -> None:
+  queue_list = music_queue_obj.get(guild_id=ctx.guild.id)
+  response = responses.queue_list_response(queue_list)
+  await ctx.send(response)
 
 
 
@@ -184,7 +189,6 @@ async def clear_queue(ctx: Context) -> None:
     await ctx.send(responses.queue_cleared_response())
   except BotExceptions.InvalidGuildIdException as e:
     await ctx.send("Очередь уже пуста!")
-
 
 
 
