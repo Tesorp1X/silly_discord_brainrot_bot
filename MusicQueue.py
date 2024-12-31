@@ -129,7 +129,9 @@ class MusicQueue:
     def get_next_song_title(self, guild_id) -> str:
         if guild_id in self.__queue:
             if not self.is_shuffled(guild_id):
-                return self.__queue[guild_id][0].get_title()
+                if len(self.__queue[guild_id]) > 0:
+                    return self.__queue[guild_id][0].get_title()
+                return "Очередь закончилась"
             return "Очередь перемешана!"
         raise BotExceptions.InvalidGuildIdException(guild_id)
 
