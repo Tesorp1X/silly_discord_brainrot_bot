@@ -42,23 +42,20 @@ YDL_OPTS = {
 FFMPEG_OPTS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
                  'options': '-vn -filter:a "volume=0.25"'}
 
+
+
 async def send_message(message: Message, user_message: str) -> None:
   if not user_message:
     print('Message was empty: intents probably..')
     return
-
-  try:
-    response: str = responses.get_default_response(user_message)
-    await message.channel.send(response)
-  except Exception as e:
-    print(e)
+  response: str = responses.get_default_response(user_message)
+  await message.channel.send(response)
 
 
 
 @bot.event
 async def on_ready() -> None:
   print(f'{bot.user} is now operational')
-
 
 
 
@@ -201,6 +198,10 @@ async def skip_song(ctx: Context) -> None:
     await pause(ctx)
     await play_next(ctx)
 
+
+@bot.command("help")
+async def help_command(ctx) -> None:
+  await ctx.send(responses.help_response())
 
 
 @play.before_invoke

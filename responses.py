@@ -64,3 +64,6 @@ def song_added_response(song_name: str) -> str:
 
 def queue_cleared_response() -> str:
     return "Очередь успешно очещена!"
+
+def help_response() -> str:
+    text = "Помощи нет"
