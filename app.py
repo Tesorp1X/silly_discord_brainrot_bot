@@ -199,10 +199,6 @@ async def skip_song(ctx: Context) -> None:
     await play_next(ctx)
 
 
-@bot.command("help")
-async def help_command(ctx) -> None:
-  await ctx.send(responses.help_response())
-
 
 @play.before_invoke
 async def ensure_voice(ctx: Context) -> None:
