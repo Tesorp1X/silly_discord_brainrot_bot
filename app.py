@@ -113,6 +113,7 @@ async def play_song(ctx: Context, yt_link: str, video_title: str, video_link) ->
              after=lambda a: asyncio.run_coroutine_threadsafe(play_next(ctx), bot.loop))
   await bot.change_presence(activity=Game(name=video_title))
 
+
   if music_queue_obj.is_empty(guild_id=ctx.guild.id):
     await ctx.send(responses.now_playing_response(song_title=video_title, yt_link=yt_link))
   else:
@@ -132,7 +133,7 @@ async def stop(ctx: Context) -> None:
   else:
     voice.stop()
     await ctx.voice_client.disconnect()
-
+  await bot.change_presence(activity=None)
   music_queue_obj.remove_queue(guild_id=ctx.guild.id)
 
 
