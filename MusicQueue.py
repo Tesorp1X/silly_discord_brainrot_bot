@@ -134,7 +134,7 @@ class MusicQueue:
         raise BotExceptions.InvalidGuildIdException(guild_id)
 
     def remove_queue(self, guild_id):
+        # if false, then there is nothing to clear
         if guild_id in self.__queue:
             self.__queue.pop(guild_id)
             self.__is_shuffled.pop(guild_id)
-        raise BotExceptions.InvalidGuildIdException(guild_id)
