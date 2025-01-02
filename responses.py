@@ -57,8 +57,37 @@ def song_added_response(song_name: str) -> str:
 def queue_cleared_response() -> str:
     return "Очередь успешно очещена!"
 
-def help_response() -> str:
-    text = "Помощи нет"
+def help_response(command="None") -> str:
+    if command == 'play':
+        text = "`.play <url>` - воспроизвести трек."
+    elif command == 'add':
+        text = "`.add <url>` - добавить песню в очередь."
+    elif command == 'play_all':
+        text = "`.play_all` - воспроизвести все песни из очереди."
+    elif command == 'pause':
+        text = ".pause` - поставить воспроизведение на паузу."
+    elif command == 'resume':
+        text = "`.resume` - продолжить воиспроизведение."
+    elif command == 'skip':
+        text = "`.skip` - пропустить текущий трек."
+    elif command == 'clear':
+        text = "`.clear` - очистить очередь."
+    elif command == 'stop':
+        text = "`.stop` - закончить прослушиваеие (очередь удалится)."
+    elif command == 'queue':
+        text = "`.queue` - показать очередь."
+    else:
+        text = ("Команды бота: \n" +
+                "* `.play <url>` - воспроизвести трек.\n" +
+                "* `.add <url>` - добавить песню в очередь.\n" +
+                "* `.play_all` - воспроизвести все песни из очереди.\n"
+                "* `.pause` - поставить воспроизведение на паузу.\n" +
+                "* `.resume` - продолжить воиспроизведение.\n"
+                "* `.skip` - пропустить текущий трек.\n" +
+                "* `.clear` - очистить очередь.\n" +
+                "* `.stop` - закончить прослушиваеие (очередь удалится).\n" +
+                "* `.queue` - показать очередь.\n")
+
     return text
 
 def queue_ended() -> str:

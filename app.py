@@ -194,7 +194,7 @@ async def show_queue(ctx: Context) -> None:
 
 
 
-@bot.command(name="clear_queue")
+@bot.command(name="clear")
 async def clear_queue(ctx: Context) -> None:
   try:
     music_queue_obj.remove_queue(guild_id=ctx.guild.id)
@@ -222,10 +222,24 @@ async def ensure_voice(ctx: Context) -> None:
       await ctx.author.voice.channel.connect()
     else:
       await ctx.send("You are not connected to a voice channel.")
-      raise commands.CommandError("Author not connected to a voice channel.")
   elif ctx.voice_client.is_playing():
     ctx.voice_client.stop()
 
+
+
+async def send_help(message: Message) -> None:
+  commands_list = ['play', 'add', 'play_all', 'queue', 'clear', 'skip', 'pause', 'stop', 'resume']
+  msg_text: str = message.content
+  if len(msg_text.split()) == 1:
+    await message.author.send(responses.help_response(), reference=message, mention_author=True)
+  # check if help for command is for existing command
+  if bool([elem for elem in commands_list if (elem in msg_text)]):
+    command = msg_text.split()[1]
+    await message.author.send(responses.help_response(command=command), reference=message, mention_author=True)
+  else:
+    command = msg_text.split()[1]
+    await message.author.send(f"Ошибка! Такой команды нет: {command}.\n" + responses.help_response(),
+                              reference=message, mention_author=True)
 
 
 @bot.event
@@ -238,6 +252,10 @@ async def on_message(message: Message) -> None:
   channel: str = str(message.channel)
 
   print(f'[{channel}] {username}: {user_message}')
+
+  if "help" in user_message:
+    await send_help(message)
+
   if not user_message[0] == '.':
     await send_message(message, user_message)
   await bot.process_commands(message)
