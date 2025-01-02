@@ -84,7 +84,6 @@ class MusicQueue:
         if guild_id in self.__queue:
             queue: list = self.get(guild_id)
             item = queue.pop(index)
-            print(queue)
             return item
 
         raise BotExceptions.InvalidGuildIdException(guild_id)

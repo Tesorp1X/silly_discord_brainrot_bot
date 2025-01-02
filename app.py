@@ -71,7 +71,7 @@ async def play_next(ctx: Context) -> None:
       next_song_title = song_item.get_title()
     else:
       song_item = music_queue_obj.pop(guild_id=ctx.guild.id)
-      next_song_url = music_queue_obj.pop(guild_id=ctx.guild.id).get_video_url()
+      next_song_url = song_item.get_video_url()
       next_song_yt_link = song_item.get_yt_link()
       next_song_title = song_item.get_title()
     await play_song(ctx, yt_link=next_song_yt_link, video_link=next_song_url, video_title=next_song_title)
