@@ -9,11 +9,13 @@ from discord.ext import commands
 from discord.ext.commands import Context
 from discord.ext.commands.bot import Bot
 from discord.utils import get
+from discord import Game
 
 from yt_dlp import YoutubeDL
 
 import BotExceptions
 import responses
+from BotExceptions import InvalidGuildIdException
 from MusicQueue import MusicQueue, QueueItem
 
 
@@ -63,10 +65,19 @@ async def play_next(ctx: Context) -> None:
   if not music_queue_obj.is_empty(guild_id=ctx.guild.id):
     if music_queue_obj.is_shuffled(ctx.guild.id):
       rand_index = randint(0, music_queue_obj.length(guild_id=ctx.guild.id))
-      next_song_url = music_queue_obj.pop(guild_id=ctx.guild.id, index=rand_index).get_video_url()
+      song_item = music_queue_obj.pop(guild_id=ctx.guild.id, index=rand_index)
+      next_song_url = song_item.get_video_url()
+      next_song_yt_link = song_item.get_yt_link()
+      next_song_title = song_item.get_title()
     else:
+      song_item = music_queue_obj.pop(guild_id=ctx.guild.id)
       next_song_url = music_queue_obj.pop(guild_id=ctx.guild.id).get_video_url()
-    await play(ctx, url=next_song_url)
+      next_song_yt_link = song_item.get_yt_link()
+      next_song_title = song_item.get_title()
+    await play_song(ctx, yt_link=next_song_yt_link, video_link=next_song_url, video_title=next_song_title)
+  else:
+    await ctx.send(responses.queue_ended())
+    await stop(ctx)
 
 
 
@@ -81,8 +92,15 @@ async def play_all(ctx: Context) -> None:
 
 @bot.command(name="play")
 async def play(ctx: Context, url: str) -> None:
+  with YoutubeDL(YDL_OPTS) as ydl:
+    info = ydl.extract_info(url, download=False)
+    video_link = info.get('url') #direct link, that is going to be used by FFMPEG
+    video_title = info.get('title')
+    await play_song(ctx, yt_link=url, video_title=video_title, video_link=video_link)
 
-  ffmpeg_path = os.getenv("FFMPEG_PATH")
+
+
+async def play_song(ctx: Context, yt_link: str, video_title: str, video_link) -> None:
   channel = ctx.message.author.voice.channel
   voice = get(bot.voice_clients, guild=ctx.guild)
 
@@ -91,19 +109,15 @@ async def play(ctx: Context, url: str) -> None:
   else:
     voice = await channel.connect()
 
+  voice.play(FFmpegOpusAudio(source=video_link, **FFMPEG_OPTS),
+             after=lambda a: asyncio.run_coroutine_threadsafe(play_next(ctx), bot.loop))
+  await bot.change_presence(activity=Game(name=video_title))
 
-  with YoutubeDL(YDL_OPTS) as ydl:
-    info = ydl.extract_info(url, download=False)
-    video_url = info.get('url')
-    video_title = info.get('title')
-    voice.play(FFmpegOpusAudio(source=video_url, **FFMPEG_OPTS),
-               after=lambda a:  asyncio.run_coroutine_threadsafe(play_next(ctx), bot.loop))
-
-    if voice.is_playing() and music_queue_obj.is_empty(ctx.guild.id):
-      next_song = music_queue_obj.get_next_song_title(guild_id=ctx.guild.id)
-      await ctx.send(responses.now_playing_response(song_title=video_title, yt_link=url, next_song_title=next_song))
-    else:
-      await ctx.send(responses.now_playing_response(song_title=video_title, yt_link=url))
+  if music_queue_obj.is_empty(guild_id=ctx.guild.id):
+    await ctx.send(responses.now_playing_response(song_title=video_title, yt_link=yt_link))
+  else:
+    next_song = music_queue_obj.get_next_song_title(guild_id=ctx.guild.id)
+    await ctx.send(responses.now_playing_response(song_title=video_title, yt_link=yt_link, next_song_title=next_song))
 
 
 

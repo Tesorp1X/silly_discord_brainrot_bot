@@ -15,17 +15,7 @@ def get_default_response(user_input: str) -> str:
     else:
         return 'chippi chippi chapa chapa'
 
-"""
-    Discord Markdown Format:
-    -Italics	*italics* or _italics_	Underline italics	__*underline italics*__
-    -Bold	**bold**	Underline bold	__**underline bold**__
-    -Bold Italics	***bold italics***	underline bold italics	__***underline bold italics***__
-    -Underline	__underline__	Strikethrough	 ~~Strikethrough~~
-    -Headers # ## ###
-    -Masked Links [Text](link)
-    -Lists - *
-    -Code block `code here`
-"""
+
 
 def now_playing_response(song_title: str, yt_link: str, next_song_title="Nothing...") -> str:
 
@@ -67,3 +57,10 @@ def queue_cleared_response() -> str:
 
 def help_response() -> str:
     text = "Помощи нет"
+    return text
+
+def queue_ended() -> str:
+    return "**Очередь окончена.**"
+
+def play_error():
+    return "Произошла ошибка. Возможно, видео невозможно вопроизвести в данном формате."
