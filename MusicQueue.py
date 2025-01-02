@@ -83,12 +83,11 @@ class MusicQueue:
     def pop(self, guild_id, index=0) -> QueueItem:
         if guild_id in self.__queue:
             queue: list = self.get(guild_id)
-            if type(queue) == list:
-                item = queue.pop(index)
-                print(queue)
-                return item
+            item = queue.pop(index)
+            print(queue)
+            return item
 
-            raise BotExceptions.InvalidGuildIdException(guild_id)
+        raise BotExceptions.InvalidGuildIdException(guild_id)
 
     def length(self, guild_id) -> int:
         """
