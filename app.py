@@ -232,9 +232,10 @@ async def send_help(message: Message) -> None:
   msg_text: str = message.content
   if len(msg_text.split()) == 1:
     await message.reply(responses.help_response(), mention_author=True)
+    return
   # check if help for command is for existing command
   if bool([elem for elem in commands_list if (elem in msg_text)]):
-    command = msg_text.split()[1]
+    command = msg_text.split()[1].removeprefix(".")
     await message.reply(responses.help_response(command=command), mention_author=True)
   else:
     command = msg_text.split()[1]
