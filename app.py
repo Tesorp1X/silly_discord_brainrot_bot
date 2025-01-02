@@ -231,15 +231,14 @@ async def send_help(message: Message) -> None:
   commands_list = ['play', 'add', 'play_all', 'queue', 'clear', 'skip', 'pause', 'stop', 'resume']
   msg_text: str = message.content
   if len(msg_text.split()) == 1:
-    await message.author.send(responses.help_response(), reference=message, mention_author=True)
+    await message.reply(responses.help_response(), mention_author=True)
   # check if help for command is for existing command
   if bool([elem for elem in commands_list if (elem in msg_text)]):
     command = msg_text.split()[1]
-    await message.author.send(responses.help_response(command=command), reference=message, mention_author=True)
+    await message.reply(responses.help_response(command=command), mention_author=True)
   else:
     command = msg_text.split()[1]
-    await message.author.send(f"Ошибка! Такой команды нет: {command}.\n" + responses.help_response(),
-                              reference=message, mention_author=True)
+    await message.reply(f"Ошибка! Такой команды нет: {command}.\n" + responses.help_response(), mention_author=True)
 
 
 @bot.event
