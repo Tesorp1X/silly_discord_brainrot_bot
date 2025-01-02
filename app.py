@@ -46,14 +46,6 @@ FFMPEG_OPTS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_
 
 
 
-async def send_message(message: Message, user_message: str) -> None:
-  if not user_message:
-    print('Message was empty: intents probably..')
-    return
-  response: str = responses.get_default_response(user_message)
-  await message.channel.send(response)
-
-
 
 @bot.event
 async def on_ready() -> None:
@@ -64,7 +56,7 @@ async def on_ready() -> None:
 async def play_next(ctx: Context) -> None:
   if not music_queue_obj.is_empty(guild_id=ctx.guild.id):
     if music_queue_obj.is_shuffled(ctx.guild.id):
-      rand_index = randint(0, music_queue_obj.length(guild_id=ctx.guild.id))
+      rand_index = randint(0, music_queue_obj.length(guild_id=ctx.guild.id) - 1)
       song_item = music_queue_obj.pop(guild_id=ctx.guild.id, index=rand_index)
       next_song_url = song_item.get_video_url()
       next_song_yt_link = song_item.get_yt_link()
@@ -144,32 +136,21 @@ async def pause(ctx: Context):
   voice = get(bot.voice_clients, guild=ctx.guild)
   if voice.is_playing():
     voice.pause()
-    await ctx.send(":fire: Music Paused...")
+    await ctx.send(":pause_button: Воспроизведение на паузе!")
 
 
 
 @bot.command(name="resume")
-async def resume(ctx: Context):
+async def resume(ctx: Context) -> None:
   voice = get(bot.voice_clients, guild=ctx.guild)
   if not voice.is_playing():
     voice.resume()
-    await ctx.send(":fire: Music Resumed...")
-
-
-
-@bot.command(name="volume")
-async def volume(ctx: Context, volume: int):
-  volume = int(volume)
-  if ctx.voice_client is None:
-    return await ctx.send("Not connected to a voice channel.")
-
-  ctx.voice_client.source.volume = volume / 100
-  await ctx.send(f":fire: Changed volume to {volume}%")
+    await ctx.send(":arrow_forward: Воспроизведение продолжается!")
 
 
 
 @bot.command(name="add")
-async def add_to_queue(ctx: Context, url: str) -> str:
+async def add_to_queue(ctx: Context, url: str) -> None:
   with YoutubeDL(YDL_OPTS) as ydl:
     info = ydl.extract_info(url, download=False)
     video_url = info.get('url')
@@ -179,7 +160,7 @@ async def add_to_queue(ctx: Context, url: str) -> str:
                                video_title=video_title,
                                video_url=video_url,
                                video_yt_link=url)
-      await ctx.send(responses.song_added_response(song_name=video_title))
+      await ctx.reply(responses.song_added_response(song_name=video_title), mention_author=True)
     except BotExceptions.InvalidQueueItemAttributeException as e:
       #TODO Error response
       await ctx.send(e.message)
@@ -189,8 +170,7 @@ async def add_to_queue(ctx: Context, url: str) -> str:
 @bot.command(name="queue")
 async def show_queue(ctx: Context) -> None:
   queue_list = music_queue_obj.get(guild_id=ctx.guild.id)
-  response = responses.queue_list_response(queue_list)
-  await ctx.send(response)
+  await ctx.send(responses.queue_list_response(queue_list))
 
 
 
@@ -229,9 +209,12 @@ async def ensure_voice(ctx: Context) -> None:
 
 async def send_help(message: Message) -> None:
   commands_list = ['play', 'add', 'play_all', 'queue', 'clear', 'skip', 'pause', 'stop', 'resume']
-  msg_text: str = message.content
+  msg_text: str = message.content.lower()
   if len(msg_text.split()) == 1:
     await message.reply(responses.help_response(), mention_author=True)
+    return
+  if msg_text.split()[1] == "me":
+    await message.reply("Держись, котёнок!:heart:", mention_author=True)
     return
   # check if help for command is for existing command
   if bool([elem for elem in commands_list if (elem in msg_text)]):
@@ -248,16 +231,19 @@ async def on_message(message: Message) -> None:
     return
 
   username: str = str(message.author)
-  user_message: str = message.content
+  user_message: str = message.content.lower()
   channel: str = str(message.channel)
 
   print(f'[{channel}] {username}: {user_message}')
 
   if "help" in user_message:
     await send_help(message)
+    return
 
   if not user_message[0] == '.':
-    await send_message(message, user_message)
+    await message.reply(responses.get_meme_response(user_message))
+
+
   await bot.process_commands(message)
 
 

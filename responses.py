@@ -1,26 +1,25 @@
 import MusicQueue
+from random import randint
 
-def get_default_response(user_input: str) -> str:
+def get_meme_response(user_input: str) -> str:
     lowered: str = user_input.lower()
-
+    greetings_list = ["hi", "hello", "what's up", "hallo", "привет", "пивет", "прив", "приф", "ohayo", "yo"]
     if lowered == '':
         return 'you\'ve got to say something'
-    elif 'hello' in lowered or 'привет' in lowered:
-        return 'ohayo!'
-
-    return ("Команды бота: \n * `.play <url>` - воспроизвести трек\n * `.add <url>` - добавить песню в очередь.\n" +
-            "* `.pause` - поставить воспроизведение на паузу.\n* `.skip` - пропустить текущий трек.\n" +
-            "* `.stop` - закончить прослушиваеие (очередь удалится).\n" +
-            "* `.queue` - показать очередь")
+    elif bool([elem for elem in greetings_list if (elem in lowered)]):
+        return greetings_list[randint(0, len(greetings_list) - 1)] + ":wave:"
+    elif "пиво" in lowered:
+        return "Пиво!:beers:"
+    return "chipi chipi chapa chapa:microphone:"
 
 
 
 def now_playing_response(song_title: str, yt_link: str, next_song_title="Nothing...") -> str:
 
-    now_playing_text = f"**Сейчас играет: [{song_title}]({yt_link})**"
+    now_playing_text = f"**:arrow_forward: Сейчас играет: [{song_title}]({yt_link})**"
     next_song_text = f"**Следующая песня:** *{next_song_title}*"
     help_text = "* `.pause` - поставить воспроизведение на паузу.\n* `.skip` - пропустить текущий трек.\n" +\
-                "* `.stop` - закончить прослушиваеие (очередь удалится).\n* `.add <url>` - добавить песню в очередь.\n"
+                "* `.stop` - закончить прослушивание (очередь удалится).\n* `.add <url>` - добавить песню в очередь.\n"
     return now_playing_text + '\n' + next_song_text + '\n' + help_text
 
 
