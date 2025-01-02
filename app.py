@@ -92,7 +92,7 @@ async def play_all(ctx: Context) -> None:
 
 @bot.command(name="play")
 async def play(ctx: Context) -> None:
-  url: str = ctx.message.content
+  url: str = ctx.message.content.split()[1]
   with YoutubeDL(YDL_OPTS) as ydl:
     info = ydl.extract_info(url, download=False)
     video_link = info.get('url') #direct link, that is going to be used by FFMPEG
