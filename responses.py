@@ -1,8 +1,3 @@
-from discord.ext import commands
-from discord.utils import get
-from discord import FFmpegPCMAudio
-
-from youtube_dl import YoutubeDL
 import MusicQueue
 
 def get_default_response(user_input: str) -> str:
@@ -10,10 +5,13 @@ def get_default_response(user_input: str) -> str:
 
     if lowered == '':
         return 'you\'ve got to say something'
-    elif 'hello' in lowered:
+    elif 'hello' in lowered or 'привет' in lowered:
         return 'ohayo!'
-    else:
-        return 'chippi chippi chapa chapa'
+
+    return ("Команды бота: \n * `.play <url>` - воспроизвести трек\n * `.add <url>` - добавить песню в очередь.\n" +
+            "* `.pause` - поставить воспроизведение на паузу.\n* `.skip` - пропустить текущий трек.\n" +
+            "* `.stop` - закончить прослушиваеие (очередь удалится).\n" +
+            "* `.queue` - показать очередь")
 
 
 
@@ -21,7 +19,9 @@ def now_playing_response(song_title: str, yt_link: str, next_song_title="Nothing
 
     now_playing_text = f"**Сейчас играет: [{song_title}]({yt_link})**"
     next_song_text = f"**Следующая песня:** *{next_song_title}*"
-    return now_playing_text + '\n' + next_song_text
+    help_text = "* `.pause` - поставить воспроизведение на паузу.\n* `.skip` - пропустить текущий трек.\n" +\
+                "* `.stop` - закончить прослушиваеие (очередь удалится).\n* `.add <url>` - добавить песню в очередь.\n"
+    return now_playing_text + '\n' + next_song_text + '\n' + help_text
 
 
 
@@ -41,7 +41,7 @@ def queue_list_response(queue: list[MusicQueue.QueueItem]) -> str:
         else:
             list_txt = f"* {item_no}. [{song_name}](<{yt_link}>)"
 
-    return next_in_queue_txt + "\n" + list_txt
+    return next_in_queue_txt + "\n" + list_txt + "\n" + "* `.play_all` - чтобы воспрозвести все.\n"
 
 def empty_queue_response():
     return "Нечего играть. Сначала добавьте песни в очередь при помощи `.add <url>` или воспроизведите песню с помощью `.play <url>`"
@@ -49,7 +49,9 @@ def empty_queue_response():
 
 
 def song_added_response(song_name: str) -> str:
-    return f"{song_name} успешно добавлена в очередь!"
+    return (f"{song_name} успешно добавлена в очередь!\n" +
+            "* `.play_all` - чтобы воспрозвести все.\n" +
+            "* `.add <url>` - чтобы добавить еще одну песню.\n * `.queue` - чтобы посмотреть что сейчас в очереди.")
 
 
 def queue_cleared_response() -> str:
