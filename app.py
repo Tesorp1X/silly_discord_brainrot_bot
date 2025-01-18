@@ -39,7 +39,8 @@ YDL_OPTS = {
     'quiet': False,
     'no_warnings': True,
     'default_search': 'auto',
-    'source_address': '0.0.0.0'
+    'source_address': '0.0.0.0',
+    'cookiefile': 'ytc.txt'
     }
 FFMPEG_OPTS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
                  'options': '-vn -filter:a "volume=0.25"'}
